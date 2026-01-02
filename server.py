@@ -1,10 +1,21 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
 
-@app.route("/lokasi", methods=["POST"])
+# Izinkan semua origin & header (untuk testing)
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+@app.route("/lokasi", methods=["POST", "OPTIONS"])
 def lokasi():
-    data = request.json
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"})
+
+    data = request.get_json(force=True, silent=True)
+
+    if not data:
+        return jsonify({"error": "No JSON received"}), 400
+
     lat = data.get("latitude")
     lon = data.get("longitude")
 
